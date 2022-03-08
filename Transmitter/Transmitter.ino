@@ -2,9 +2,20 @@
  * Senior Design II - Transmitter Code *
  ***************************************/
 
-// Initialize components
-void initMotionShield(void);
+// Libraries
+#include "Arduino_NineAxesMotion.h" //Contains the bridge code between the API and the Arduino Environment
+#include <Wire.h>
 
+// Initialize motion shield
+NineAxesMotion motionSensor;  //Object that for the sensor
+bool intDetected = false; //Flag to indicate if an interrupt was detected
+int threshold = 25;      //At a Range of 4g, the threshold is set at 39.05mg or 0.3830m/s2. This Range is the default for NDOF Mode
+int duration = 1;     //At a filter Bandwidth of 62.5Hz, the duration is 8ms. This Bandwidth is the default for NDOF Mode
+bool anyMotion = true;    //To know which interrupt was triggered
+
+int InterruptPin = 2; // Pin D2 is connected to the INT LED
+
+// Initialize components
 void initDFac(void);
 uint8_t getDFac(void);
 void setDFac(int cVal);
@@ -35,8 +46,21 @@ void setup()
   initDisp();
 
   // Motion Sensor Initialization
-  Serial.println("Please wait. Motion sensor initialization in progress.");
-  setupMotionShield();
+  Wire.begin();    //Initialize I2C communication to the let the library communicate with the sensor.
+  //Sensor Initialization
+  Serial.println("Please wait. Initialization in process.");
+  motionSensor.initSensor();              //The I2C Address can be changed here inside this function in the library
+  motionSensor.setOperationMode(OPERATION_MODE_NDOF); //Can be configured to other operation modes as desired
+  motionSensor.setUpdateMode(MANUAL);         //The default is AUTO. Changing to manual requires calling the relevant update functions prior to calling the read functions
+  //Setting to MANUAL  requires lesser reads to the sensor
+
+    attachInterrupt(digitalPinToInterrupt(InterruptPin), motionISR, RISING); //Attach the interrupt to the Interrupt Service Routine for a Rising Edge. Change the interrupt pin depending on the board
+
+  //Setup the initial interrupt to trigger at No Motion
+  motionSensor.resetInterrupt();
+  motionSensor.enableSlowNoMotion(threshold, duration, NO_MOTION);
+  anyMotion = false;
+  motionSensor.accelInterrupts(ENABLE, ENABLE, ENABLE); //Accelerometer interrupts can be triggered from all 3 axes
   
   /// Print ready message
   Serial.println("Initialization complete, system is ready.");
@@ -53,4 +77,32 @@ void loop()
     dispDFac(curDFac);
     lastDFac = curDFac;
   }
+
+  if (intDetected)
+  {
+    if (anyMotion)
+    {
+      Serial.println("You moved!! Try again. Keep the Device at one place.\n");
+      intDetected = false;
+      motionSensor.resetInterrupt();                   //Reset the interrupt line
+      motionSensor.disableAnyMotion();                 //Disable the Any motion interrupt
+      motionSensor.enableSlowNoMotion(threshold, duration, NO_MOTION); //Enable the No motion interrupt (can also use the Slow motion instead)
+      anyMotion = false;
+    }
+    else
+    {
+      Serial.println("Device is not moving. You may start again.\n\n\n");
+      intDetected = false;
+      motionSensor.resetInterrupt();             //Reset the interrupt line
+      motionSensor.disableSlowNoMotion();          //Disable the Slow or No motion interrupt
+      motionSensor.enableAnyMotion(threshold, duration); //Enable the Any motion interrupt
+      anyMotion = true;
+    }
+  }
+}
+
+//Interrupt Service Routine when the sensor triggers an Interrupt
+void motionISR()
+{
+  intDetected = true;
 }
