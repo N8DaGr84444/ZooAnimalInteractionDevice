@@ -27,9 +27,6 @@ void setup()
   Serial.println();
   Serial.println();
 
-  // Initialize I2C communication for the motion sensor
-  I2C.begin();
-
   // Setup 4 digit display
   const uint8_t D_FAC = getDFac();
   if (D_FAC > 100 || D_FAC < 0)
@@ -40,10 +37,6 @@ void setup()
   // Motion Sensor Initialization
   Serial.println("Please wait. Motion sensor initialization in progress.");
   setupMotionShield();
-
-  // Attach interrupt to Interrupt Service Routine
-  // for a Rising Edge. Change the interrupt pin depending on the board.
-  attachInterrupt(INT_PIN, motionISR, RISING);
   
   /// Print ready message
   Serial.println("Initialization complete, system is ready.");
