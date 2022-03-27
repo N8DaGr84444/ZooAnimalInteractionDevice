@@ -22,7 +22,7 @@ uint8_t getDFac(void)
 void setDFac(int cVal)
 {
   uint8_t nDFac = conf.dFac + cVal;
-  if (nDFac <= 100)
+  if (nDFac >= 10 && nDFac <= 500)
   {
     conf.dFac = nDFac;
     EEPROM.put(ADDR, conf.dFac);
