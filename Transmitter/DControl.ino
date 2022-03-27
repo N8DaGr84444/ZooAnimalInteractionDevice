@@ -7,6 +7,7 @@
  
 static const uint8_t PIN_A = 3;
 static const uint8_t PIN_B = 4;
+static const uint8_t PIN_Button = 5;
 
 void initEnc(void)
 {
@@ -21,12 +22,28 @@ void checkEnc(void)
 {
   if (digitalRead(PIN_A) == HIGH)
     if (digitalRead(PIN_B) != LOW)
-      setDFac(-1);
+    {
+      setDFac(-10);
+      setMotionThreshold(-10);
+      delay(500);
+    }
     else
-      setDFac(1);
+    {
+      setDFac(10);
+      setMotionThreshold(10);
+      delay(500);
+    }
   else
     if (digitalRead(PIN_B) == LOW)
-      setDFac(-1);
+    {
+      setDFac(-10);
+      setMotionThreshold(-10);
+      delay(500);
+    }
     else
-      setDFac(1);
+    {
+      setDFac(10);
+      setMotionThreshold(10);
+      delay(500);
+    }
 } 
