@@ -16,6 +16,9 @@ void initEnc(void);
 void initDisp(void);
 void dispDFac(uint8_t dVal);
 
+const int buttonPin = 5;     // the number of the pushbutton pin of the rotary encoder
+int buttonState = 0;
+
 static uint8_t lastDFac = -1;   // Hold last motion threshold value
 
 // Initialize motion shield
@@ -39,6 +42,9 @@ void setup()
   Serial.println("-------------------------------------------------------------");
   Serial.println();
   Serial.println();
+
+  // Setup push button as input
+  pinMode(buttonPin, INPUT);
 
   // Setup 4 digit display
   const uint8_t D_FAC = getDFac();
@@ -74,6 +80,14 @@ void setup()
 
 void loop()
 {
+  buttonState = digitalRead(buttonPin);
+
+  if (buttonState == LOW){
+    delay(1000);
+    Serial.println("Button pushed");
+    
+  }
+  
   uint8_t curDFac = getDFac();
   if (curDFac != lastDFac)
   {
