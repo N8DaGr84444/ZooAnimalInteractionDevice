@@ -34,6 +34,9 @@ void setup()
   Serial.println();
   Serial.println();
 
+  // Clear display
+  clearDisp();
+  
   // Setup push button as input
   pinMode(buttonPin, INPUT);
 
