@@ -20,30 +20,37 @@ void initEnc(void)
 
 void checkEnc(void)
 {
-  if (digitalRead(PIN_A) == HIGH)
-    if (digitalRead(PIN_B) != LOW)
-    {
-      setDFac(-10);
-      setMotionThreshold(-10);
-      delay(500);
-    }
+  if (isDispOn()) {
+    Serial.println("Screen val: ");
+    Serial.println(isDispOn());
+    if (digitalRead(PIN_A) == HIGH)
+      if (digitalRead(PIN_B) != LOW)
+      {
+        setDFac(-10);
+  //      setMotionThreshold(-10);
+        delay(500);
+      }
+      else
+      {
+        setDFac(10);
+  //      setMotionThreshold(10);
+        delay(500);
+      }
     else
-    {
-      setDFac(10);
-      setMotionThreshold(10);
-      delay(500);
+      if (digitalRead(PIN_B) == LOW)
+      {
+        setDFac(-10);
+  //      setMotionThreshold(-10);
+        delay(500);
+      }
+      else
+      {
+        setDFac(10);
+  //      setMotionThreshold(10);
+        delay(500);
     }
-  else
-    if (digitalRead(PIN_B) == LOW)
-    {
-      setDFac(-10);
-      setMotionThreshold(-10);
-      delay(500);
-    }
-    else
-    {
-      setDFac(10);
-      setMotionThreshold(10);
-      delay(500);
-    }
+  }
+  else {
+    Serial.println("Screen not on, not changing disp val");
+  }
 } 

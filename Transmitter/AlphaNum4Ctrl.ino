@@ -28,3 +28,12 @@ void dispDFac(uint8_t dVal)
     alpha4.writeDigitAscii(alpha4Inx--, dBuf[i]);
   alpha4.writeDisplay();
 }
+
+void clearDisp(void)
+{
+  alpha4.clear();
+  for (int i = 0; i < 4; i++) {
+    alpha4.writeDigitRaw(i, 0);   // Wirtes 0 ("nothing") to all 4 display digits
+  }
+  alpha4.writeDisplay();
+}

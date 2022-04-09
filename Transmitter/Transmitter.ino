@@ -6,18 +6,9 @@
 #include "Arduino_NineAxesMotion.h" //Contains the bridge code between the API and the Arduino Environment
 #include <Wire.h>
 
-
-
-// Initialize components
-void initDFac(void);
-uint8_t getDFac(void);
-void setDFac(int cVal);
-void initEnc(void);
-void initDisp(void);
-void dispDFac(uint8_t dVal);
-
 const int buttonPin = 5;     // the number of the pushbutton pin of the rotary encoder
 int buttonState = 0;
+bool showDisplay = false;
 
 static uint8_t lastDFac = -1;   // Hold last motion threshold value
 
@@ -45,14 +36,6 @@ void setup()
 
   // Setup push button as input
   pinMode(buttonPin, INPUT);
-
-  // Setup 4 digit display
-  const uint8_t D_FAC = getDFac();
-  if (D_FAC > 500 || D_FAC < 10)
-    initDFac();
-  initEnc();
-  initDisp();
-  threshold = D_FAC;
 
   // Motion Sensor Initialization
   Wire.begin();    //Initialize I2C communication to the let the library communicate with the sensor.
@@ -83,9 +66,35 @@ void loop()
   buttonState = digitalRead(buttonPin);
 
   if (buttonState == LOW){
+    Serial.println("Button pushed, show display: ");
+    Serial.println(!showDisplay);
     delay(1000);
-    Serial.println("Button pushed");
-    
+
+    // Turn on display
+    if (!(showDisplay)) {
+      showDisplay = true;
+      // Initialize components
+      void initDFac(void);
+      uint8_t getDFac(void);
+      void setDFac(int cVal);
+      void initEnc(void);
+      void initDisp(void);
+      void dispDFac(uint8_t dVal);
+      
+      // Setup 4 digit display
+      const uint8_t D_FAC = getDFac();
+      if (D_FAC > 500 || D_FAC < 10)
+        initDFac();
+      initEnc();
+      initDisp();
+      threshold = D_FAC;
+    }
+    // Turn off display and update threshold
+    else {
+      showDisplay = false;
+      clearDisp();
+      setMotionThreshold(getDFac);
+    }
   }
   
   uint8_t curDFac = getDFac();
@@ -109,8 +118,8 @@ void loop()
     else
     {
       Serial.println("Device is not moving. You may start again.\n\n\n");
-      Serial.println("Current threshold:");
-      Serial.println(threshold);
+//      Serial.println("Current threshold:");
+//      Serial.println(threshold);
       intDetected = false;
       motionSensor.resetInterrupt();             //Reset the interrupt line
       motionSensor.disableSlowNoMotion();          //Disable the Slow or No motion interrupt
@@ -129,6 +138,11 @@ void loop()
   }
 }
 
+bool isDispOn(void)
+{
+  return showDisplay;
+}
+
 //Interrupt Service Routine when the sensor triggers an Interrupt
 void motionISR()
 {
@@ -137,19 +151,11 @@ void motionISR()
 
 void setMotionThreshold(int cVal)
 {
-  uint8_t newThreshold = threshold + cVal;
-  if (newThreshold >= 10 && newThreshold <= 500)
-  {
-    Serial.println("Changing threshold, keep device still");
-    threshold = newThreshold;
-//    intDetected = false;
-//    motionSensor.resetInterrupt();                   //Reset the interrupt line
-//    motionSensor.disableAnyMotion();                 //Disable the Any motion interrupt
-//    motionSensor.enableSlowNoMotion(threshold, duration, NO_MOTION); //Enable the No motion interrupt (can also use the Slow motion instead)
-//    anyMotion = false;
-//    Serial.println("Current threshold:");
-//    Serial.println(threshold);
-//      intDetected = true;
-    updateThreshold = true;
-  }
+    threshold = getDFac();
+    motionSensor.resetInterrupt();                   //Reset the interrupt line
+    motionSensor.disableAnyMotion();                 //Disable the Any motion interrupt
+    motionSensor.enableAnyMotion(threshold, duration); //Enable the Any motion interrupt
+    Serial.println("Threshold updated");
+    Serial.println(threshold);
+
 }
