@@ -21,8 +21,6 @@ void initEnc(void)
 void checkEnc(void)
 {
   if (isDispOn()) {
-    Serial.println("Screen val: ");
-    Serial.println(isDispOn());
     if (digitalRead(PIN_A) == HIGH)
       if (digitalRead(PIN_B) != LOW)
       {

@@ -91,9 +91,9 @@ void loop()
     }
     // Turn off display and update threshold
     else {
+      setMotionThreshold(getDFac);
       showDisplay = false;
       clearDisp();
-      setMotionThreshold(getDFac);
     }
   }
   
